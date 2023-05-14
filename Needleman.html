@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('background.jpg');
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #004c6d;
+        }
+
+        input {
+            width: 300px;
+            height: 30px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Needleman-Wunsch Algorithm</h1>
+        <form>
+            <label for="sequence1">Sequence 1:</label>
+            <input type="text" id="sequence1"><br>
+
+            <label for="sequence2">Sequence 2:</label>
+            <input type="text" id="sequence2"><br>
+
+            <label for="matchScore">Match score:</label>
+            <input type="text" id="matchScore" value="1"><br>
+
+            <label for="mismatchScore">Mismatch score:</label>
+            <input type="text" id="mismatchScore" value="-1"><br>
+
+            <label for="gapPenalty">Gap penalty:</label>
+            <input type="text" id="gapPenalty" value="-2"><br>
+
+            <button type="button" onclick="runAlgorithm()">Run</button>
+        </form>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function runAlgorithm() {
+            // Get input values
+            var sequence1 = document.getElementById("sequence1").value.toUpperCase();
+            var sequence2 = document.getElementById("sequence2").value.toUpperCase();
+            var matchScore = parseInt(document.getElementById("matchScore").value);
+            var mismatchScore = parseInt(document.getElementById("mismatchScore").value);
+            var gapPenalty = parseInt(document.getElementById("gapPenalty").value);
+
+            // Initialize the matrix
+            var matrix = [];
+            for (var i = 0; i <= sequence1.length; i++) {
+                matrix[i] = [];
+                for (var j = 0; j <= sequence2.length; j++) {
+                    if (i === 0) {
+                        matrix[i][j] = j * gapPenalty;
+                    } else if (j === 0) {
+                        matrix[i][j] = i * gapPenalty;
+                    } else {
+                        matrix[i][j] = 0;
+                    }
+                }
+            }
+
+                       // Fill the matrix
+                            for (var i = 1; i <= sequence1.length; i++) {
+                                for (var j = 1; j <= sequence2.length; j++) {
+                                    var diagonal = matrix[i - 1][j - 1] + (sequence1[i - 1] === sequence2[j - 1] ? matchScore : mismatchScore);
+                                    var up = matrix[i - 1][j] + gapPenalty;
+                                    var left = matrix[i][j - 1] + gapPenalty;
+                                    matrix[i][j] = Math.max(diagonal, up, left);
+                                }
+                            }
+
+                            // Generate alignment
+                            var alignment = [];
+                            var i = sequence1.length;
+                            var j = sequence2.length;
+                            while (i > 0 || j > 0) {
+                                if (i > 0 && j > 0 && matrix[i][j] === matrix[i - 1][j - 1] + (sequence1[i - 1] === sequence2[j - 1] ? matchScore : mismatchScore)) {
+                                    alignment.unshift(sequence1[i - 1] + " " + sequence2[j - 1]);
+                                    i--;
+                                    j--;
+                                } else if (i > 0 && matrix[i][j] === matrix[i - 1][j] + gapPenalty) {
+                                    alignment.unshift(sequence1[i - 1] + " -");
+                                    i--;
+                                } else {
+                                    alignment.unshift("- " + sequence2[j - 1]);
+                                    j--;
+                                }
+                            }
+
+                            // Display output
+                            var output = document.getElementById("output");
+                            output.innerHTML = "<h3>Alignment Matrix:</h3>";
+                            output.innerHTML += "<pre>" + matrix.map(row => row.join("\t")).join("\n") + "</pre>";
+                            output.innerHTML += "<h3>Alignment:</h3>";
+                            output.innerHTML += "<pre>" + alignment.join("\n") + "</pre>";
+                        }
+                    </script>
+    </body>
+    
+    </html>
